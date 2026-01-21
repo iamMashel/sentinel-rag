@@ -8,3 +8,12 @@ wheels/
 
 # Virtual environments
 .venv
+venv/
+ENV/
+
+# Environment Variables (Secrets)
+.env
+
+# Local Databases
+*.sqlite3
+chroma_db/
