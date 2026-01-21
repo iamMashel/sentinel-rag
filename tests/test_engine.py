@@ -1,4 +1,5 @@
 import pytest
+import json
 from unittest.mock import MagicMock, patch
 from sentinel_rag.core.engine import SupportBot
 
@@ -69,3 +70,38 @@ def test_get_response_fallback(support_bot, mock_genai):
     
     assert response['source'] == 'llm_generation'
     assert response['answer'] == "LLM Answer"
+
+def test_load_knowledge_base_file_not_found(support_bot):
+    with patch("builtins.open", side_effect=FileNotFoundError):
+        # Should catch exception and log error, not raise
+        support_bot.load_knowledge_base("non_existent.json")
+    
+    # Verify no embeddings were generated
+    support_bot.vector_store.add_documents.assert_not_called()
+
+def test_load_knowledge_base_invalid_json(support_bot):
+    with patch("builtins.open", new_callable=MagicMock) as mock_open:
+        mock_file = MagicMock()
+        mock_file.__enter__.return_value.read.return_value = 'INVALID JSON'
+        # json.load would raise JSONDecodeError when reading from file object if we didn't mock it to return the string directly?
+        # Actually json.load takes a file-like object. 
+        with patch("json.load", side_effect=json.JSONDecodeError("msg", "doc", 0)):
+             support_bot.load_knowledge_base("bad.json")
+             
+    support_bot.vector_store.add_documents.assert_not_called()
+
+def test_get_response_api_error(support_bot, mock_genai):
+    # Mock embedding failure
+    mock_genai.embed_content.side_effect = Exception("API Down")
+    
+    response = support_bot.get_response("query")
+    
+    assert response['source'] == 'error'
+    assert "error" in response['answer']
+
+def test_generate_fallback_error(support_bot):
+    # Mock LLM failure
+    support_bot.model.generate_content.side_effect = Exception("LLM Error")
+    
+    result = support_bot._generate_fallback("query")
+    assert "unable to generate" in result
