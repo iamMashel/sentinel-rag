@@ -1,0 +1,19 @@
+{
+  "responses": [
+    {
+      "id": "1",
+      "topic": "reset_password",
+      "response_text": "To reset your password, visit the login page and click on 'Forgot Password'. Follow the email instructions."
+    },
+    {
+      "id": "2",
+      "topic": "pricing",
+      "response_text": "Our pricing tiers are: Basic ($10/mo), Pro ($30/mo), and Enterprise (Contact Sales)."
+    },
+    {
+      "id": "3",
+      "topic": "contact_support",
+      "response_text": "You can contact support via email at support@chatsolveai.com or call us at 1-800-555-0199."
+    }
+  ]
+}
